@@ -1,5 +1,5 @@
-from flask import Flask, render_template, request
-from models.marks.marks import marks_prediction
+from flask import Flask, render_template, request, jsonify
+from models.marks.marks import marks_prediction, get_dataset
 
 
 app = Flask(__name__)
@@ -22,10 +22,20 @@ def sub():
 def marks():
     if request.method == "POST":
         hours = request.form["hours"]
-        marks = marks_prediction(hours)
-        return render_template("marks.html", marks=marks)
+        if hours.isnumeric():
+            marks = marks_prediction(hours)
+            return jsonify({"marks": round(marks, 2), "status": "success"})
     return render_template("index.html")
 
+@app.route("/dataset", methods=["GET"])
+def dataset():
+    dataset = get_dataset()
+    data = {
+        "data": dataset[0],
+        "description": dataset[1],
+        "status": "success",
+    }
+    return jsonify(data)
 
 if __name__ == "__main__":
     app.run(debug=True)

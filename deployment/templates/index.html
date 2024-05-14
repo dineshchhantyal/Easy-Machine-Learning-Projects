@@ -3,9 +3,120 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
+    <title>Marks Prediction</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #fffae6;
+        margin: 0;
+        padding: 0;
+      }
+
+      .container {
+        max-width: 800px;
+        margin: 20px auto;
+        padding: 20px;
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      }
+
+      h1,
+      h2,
+      h3 {
+        color: #002379;
+        margin-bottom: 10px;
+      }
+
+      p {
+        color: #ff5f00;
+        margin-bottom: 20px;
+      }
+
+      form {
+        margin-bottom: 20px;
+      }
+
+      input[type="text"] {
+        padding: 10px;
+        margin-right: 10px;
+        border-radius: 4px;
+        border: 1px solid #ff9f66;
+      }
+
+      input[type="submit"] {
+        padding: 10px 20px;
+        background-color: #ff9f66;
+        color: #fff;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 20px;
+      }
+
+      table,
+      th,
+      td {
+        border: 1px solid #ccc;
+      }
+
+      th,
+      td {
+        padding: 10px;
+        text-align: left;
+      }
+
+      th {
+        background-color: #ff9f66;
+        color: #fff;
+      }
+
+      .data-description {
+        margin: 20px;
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      }
+
+      .data-description h2 {
+        color: #002379;
+        margin-bottom: 10px;
+      }
+
+      .data-description th,
+      .data-description td {
+        border: 1px solid #ccc;
+        padding: 8px;
+        text-align: left;
+      }
+
+      .data-description th {
+        background-color: #ff9f66;
+        color: #fff;
+        font-weight: bold;
+      }
+
+      .data-description td {
+        background-color: #fff;
+      }
+
+      #output {
+        margin-top: 20px;
+        display: none;
+      }
+
+      #output strong {
+        color: #002379;
+      }
+    </style>
   </head>
-  <body>
+  <body class="container">
     <h1>Model Deployment with Flask and Heroku</h1>
 
     <p>
@@ -13,14 +124,134 @@
       and Heroku.
     </p>
 
-    <form action="/sub" method="post">
-      <input type="text" name="username" id="" placeholder="username" />
-      <input type="submit" />
-    </form>
-
-    <form action="/marks" method="post">
+    <form id="predct">
       <input type="text" name="hours" id="" placeholder="hours" />
-      <input type="submit" value="Predict Marks" />
+      <input type="submit" value="Predict Marks" id="submit_btn" />
     </form>
+    <p style="display: none" id="output">
+      <strong>Predicted Marks:</strong>
+      <span id="output_holder"></span>
+    </p>
+    <h2>Data</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Hours</th>
+          <th>Marks</th>
+        </tr>
+      </thead>
+      <tbody id="data"></tbody>
+    </table>
+    <div>
+      <h2>Data Description</h2>
+      <p id="data_description"></p>
+    </div>
+    <script>
+      (() => {
+        fetch("/dataset")
+          .then((response) => response.json())
+          .then((data) => {
+            data_description = data.description;
+            data = data.data;
+            const table = document.getElementById("data");
+            data.forEach((row) => {
+              const tr = document.createElement("tr");
+              const td1 = document.createElement("td");
+              const td2 = document.createElement("td");
+              td1.innerText = row.Hours;
+              td2.innerText = row.Scores;
+              tr.appendChild(td1);
+              tr.appendChild(td2);
+              table.appendChild(tr);
+            });
+            const dataDescriptionElement =
+              document.getElementById("data_description");
+            dataDescriptionElement.innerHTML = `
+            <table>
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th>Hours</th>
+                        <th>Scores</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>25%</td>
+                        <td>${data_description.Hours["25%"]}</td>
+                        <td>${data_description.Scores["25%"]}</td>
+                    </tr>
+                    <tr>
+                        <td>50%</td>
+                        <td>${data_description.Hours["50%"]}</td>
+                        <td>${data_description.Scores["50%"]}</td>
+                    </tr>
+                    <tr>
+                        <td>75%</td>
+                        <td>${data_description.Hours["75%"]}</td>
+                        <td>${data_description.Scores["75%"]}</td>
+                    </tr>
+                    <tr>
+                        <td>Count</td>
+                        <td>${data_description.Hours["count"]}</td>
+                        <td>${data_description.Scores["count"]}</td>
+                    </tr>
+                    <tr>
+                        <td>Max</td>
+                        <td>${data_description.Hours["max"]}</td>
+                        <td>${data_description.Scores["max"]}</td>
+                    </tr>
+                    <tr>
+                        <td>Mean</td>
+                        <td>${data_description.Hours["mean"]}</td>
+                        <td>${data_description.Scores["mean"]}</td>
+                    </tr>
+                    <tr>
+                        <td>Min</td>
+                        <td>${data_description.Hours["min"]}</td>
+                        <td>${data_description.Scores["min"]}</td>
+                    </tr>
+                    <tr>
+                        <td>Std</td>
+                        <td>${data_description.Hours["std"]}</td>
+                        <td>${data_description.Scores["std"]}</td>
+                    </tr>
+                </tbody>
+            </table>
+            `;
+          });
+      })();
+    </script>
+    <script>
+      function predictMarks(e) {
+        e.preventDefault();
+        const submit_btn = document.getElementById("submit_btn");
+        submit_btn.disabled = true;
+        submit_btn.value = "Predicting...";
+        const form = document.getElementById("predct");
+        const formData = new FormData(form);
+        fetch("/marks", {
+          method: "POST",
+          body: formData,
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            console.log(data);
+            if (data.status == "success") {
+              document.getElementById("output").style.display = "block";
+              document.getElementById("output_holder").innerText = data.marks;
+            }
+          })
+          .finally(() => {
+            submit_btn.disabled = false;
+            submit_btn.value = "Predict Marks";
+          });
+      }
+      (() => {
+        document
+          .getElementById("predct")
+          .addEventListener("submit", predictMarks);
+      })();
+    </script>
   </body>
 </html>
